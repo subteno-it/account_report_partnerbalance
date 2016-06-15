@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="report_partnerbalance">
+        <t t-call="report.html_container">
+            <t t-set="data_report_margin_top" t-value="12"/>
+            <t t-set="data_report_header_spacing" t-value="9"/>
+            <t t-set="data_report_dpi" t-value="110"/>
+            <t t-call="report.internal_layout">
+                <div class="page">
+                    <h2>Partner Balance</h2>
+
+                    <div class="row">
+                        <div class="col-xs-3">
+                            <strong>Company:</strong>
+                            <p t-esc="res_company.name"/>
+                        </div>
+                        <div class="col-xs-3">
+                            <t t-if="data['form']['date_from']"><strong>Date from :</strong> <span t-esc="data['form']['date_from']"/><br/></t>
+                            <t t-if="data['form']['date_to']"><strong>Date to :</strong> <span t-esc="data['form']['date_to']"/></t>
+                        </div>
+                        <div class="col-xs-3">
+                            <strong>Target Moves:</strong>
+                            <p t-if="data['form']['target_move'] == 'all'">All Entries</p>
+                            <p t-if="data['form']['target_move'] == 'posted'">All Posted Entries</p>
+                        </div>
+                    </div>
+                    <table class="table table-condensed">
+                        <t t-foreach="docs" t-as="o">
+                            <tbody>
+                                <tr>
+                                    <td colspan="8">
+                                        <strong t-esc="o.code"/>
+                                        - <strong t-esc="o.name"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="col-xs-4">Partner</th>
+                                    <th class="col-xs-1 text-right">Initial Balance</th>
+                                    <th class="col-xs-1 text-right">Debit</th>
+                                    <th class="col-xs-1 text-right">Credit</th>
+                                    <th class="col-xs-1 text-right">Balance</th>
+                                </tr>
+                                <tr t-foreach="lines(data, o)" t-as="line">
+                                    <td>
+                                        <span t-esc="line['partner']"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="line['initial']" t-esc-options='{"widget": "monetary", "display_currency": "res_company.currency_id"}'/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="line['debit']" t-esc-options='{"widget": "monetary", "display_currency": "res_company.currency_id"}'/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="line['credit']" t-esc-options='{"widget": "monetary", "display_currency": "res_company.currency_id"}'/>
+                                    </td>
+                                    <td class="text-right">
+                                        <span t-esc="line['debit - credit']" t-esc-options='{"widget": "monetary", "display_currency": "res_company.currency_id"}'/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </t>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
