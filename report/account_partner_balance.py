@@ -30,7 +30,7 @@ from openerp import api, models
 class ReportPartnerBalance(models.AbstractModel):
     _name = 'report.account_report_partnerbalance.report_partnerbalance'
 
-    def _lines(self, data, account):
+    def _get_partner_ids(self, data, account):
         if data['form'].get('partner_ids'):
             partner_ids = data['form'].get('partner_ids')
         else:
@@ -60,6 +60,10 @@ class ReportPartnerBalance(models.AbstractModel):
             self.env.cr.execute(query, tuple(params))
             partner_initial_move_ids = [res['partner_id'] for res in self.env.cr.dictfetchall() if res['partner_id'] is not 'None' and float(res['sum'] or 0.) != 0.]
             partner_ids = list(set(partner_move_ids) | set(partner_initial_move_ids))
+        return partner_ids
+
+    def _lines(self, data, account):
+        partner_ids = self._get_partner_ids(data, account)
         full_account = []
         obj_partner = self.env['res.partner']
         partners = obj_partner.browse(partner_ids)
@@ -94,6 +98,42 @@ class ReportPartnerBalance(models.AbstractModel):
             if not (r['initial'] == 0.0 and r['credit'] == 0.0 and r['debit'] == 0.0 and r['debit - credit'] == 0.0):
                 full_account.append(r)
         return full_account
+
+    def _sum_account(self, data, account, field):
+        if field not in ['initial', 'debit', 'credit', 'debit - credit']:
+            return
+        result = 0.0
+        partner_ids = self._get_partner_ids(data, account)
+        if not partner_ids:
+            return result
+        if field == 'initial':
+            query_get_data = self.env['account.move.line'].with_context(data['form'].get('used_context', {}), initial_bal=True, date_to=False)._query_get()
+
+            params = [account.id, tuple(data['computed']['move_state']), tuple(partner_ids)] + query_get_data[2]
+            query = """SELECT sum(debit - credit)
+                    FROM """ + query_get_data[0] + """, account_move AS m
+                    WHERE "account_move_line".account_id = %s
+                        AND m.id = "account_move_line".move_id
+                        AND m.state IN %s
+                        AND "account_move_line".partner_id IN %s
+                        AND """ + query_get_data[1]
+        else:
+            query_get_data = self.env['account.move.line'].with_context(data['form'].get('used_context', {}))._query_get()
+
+            params = [account.id, tuple(data['computed']['move_state']), tuple(partner_ids)] + query_get_data[2]
+            query = """SELECT sum(""" + field + """)
+                    FROM """ + query_get_data[0] + """, account_move AS m
+                    WHERE "account_move_line".account_id = %s
+                        AND m.id = "account_move_line".move_id
+                        AND m.state IN %s
+                        AND "account_move_line".partner_id IN %s
+                        AND """ + query_get_data[1]
+        self.env.cr.execute(query, tuple(params))
+
+        contemp = self.env.cr.fetchone()
+        if contemp is not None:
+            result = contemp[0] or 0.0
+        return result
 
     @api.multi
     def render_html(self, data):
@@ -137,6 +177,7 @@ class ReportPartnerBalance(models.AbstractModel):
             'docs': accounts,
             'time': time,
             'lines': self._lines,
+            'sum_account': self._sum_account,
         }
         return self.env['report'].render('account_report_partnerbalance.report_partnerbalance', docargs)
 

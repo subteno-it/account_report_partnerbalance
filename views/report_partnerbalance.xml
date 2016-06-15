@@ -57,6 +57,23 @@
                                         <span t-esc="line['debit - credit']" t-esc-options='{"widget": "monetary", "display_currency": "res_company.currency_id"}'/>
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td>
+                                        <strong style="font-style: italic;" t-esc="o.name"/>
+                                    </td>
+                                    <td class="text-right">
+                                        <strong style="font-style: italic;" t-esc="sum_account(data, o, 'initial')" t-esc-options='{"widget": "monetary", "display_currency": "res_company.currency_id"}'/>
+                                    </td>
+                                    <td class="text-right">
+                                        <strong style="font-style: italic;" t-esc="sum_account(data, o, 'debit')" t-esc-options='{"widget": "monetary", "display_currency": "res_company.currency_id"}'/>
+                                    </td>
+                                    <td class="text-right">
+                                        <strong style="font-style: italic;" t-esc="sum_account(data, o, 'credit')" t-esc-options='{"widget": "monetary", "display_currency": "res_company.currency_id"}'/>
+                                    </td>
+                                    <td class="text-right">
+                                        <strong style="font-style: italic;" t-esc="sum_account(data, o, 'debit - credit')" t-esc-options='{"widget": "monetary", "display_currency": "res_company.currency_id"}'/>
+                                    </td>
+                                </tr>
                             </tbody>
                         </t>
                     </table>
