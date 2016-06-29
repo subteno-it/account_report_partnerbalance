@@ -54,7 +54,7 @@
                                         <span t-esc="line['credit']" t-esc-options='{"widget": "monetary", "display_currency": "res_company.currency_id"}'/>
                                     </td>
                                     <td class="text-right">
-                                        <span t-esc="line['debit - credit']" t-esc-options='{"widget": "monetary", "display_currency": "res_company.currency_id"}'/>
+                                        <span t-esc="line['initial'] + line['debit - credit']" t-esc-options='{"widget": "monetary", "display_currency": "res_company.currency_id"}'/>
                                     </td>
                                 </tr>
                                 <tr>
