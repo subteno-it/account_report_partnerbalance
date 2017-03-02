@@ -70,7 +70,7 @@ class ReportPartnerBalance(models.AbstractModel):
         partners = sorted(partners, key=lambda x: (x.name))
         for partner in partners:
             r = {}
-            r['partner'] = partner.name
+            r['partner'] = partner.ref and "[%s] %s" % (partner.ref, partner.name) or partner.name
             for field in ['initial', 'debit', 'credit', 'debit - credit']:
                 if field == 'initial':
                     query_get_data = self.env['account.move.line'].with_context(data['form'].get('used_context', {}), initial_bal=True, date_to=False)._query_get()
